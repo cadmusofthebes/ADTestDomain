@@ -1,30 +1,61 @@
+<#
+.Description
+This script will automatically promote a Server 2016 or Server 2019 machine to a domain controller
+
+.PARAMETER domain
+The domain parameter will be the name of your domain in the form of domain.local
+
+.EXAMPLE
+promoteToDC.ps1 -domain matrix
+#> 
+
 [CmdletBinding()]
 Param(
-  [Parameter(Mandatory=$true)]
+    [switch]$help,
     [string]$domain
-    )
+)
 
-# Disable all the normal warnings when creating a test domain
-$WarningPreference = 'SilentlyContinue'
+function promoteDC(){
+    # Disable all the normal warnings when creating a test domain
+    $WarningPreference = 'SilentlyContinue'
 
-# Remind user to take a snapshot before running
-Write-Host "[!] DO NOT CONTINUE UNLESS YOU HAVE TAKEN A SNAPSHOT!"  -ForegroundColor Red
-read-host “Press ENTER to continue...”
+    # Remind user to take a snapshot before running
+    Write-Host "[!] DO NOT CONTINUE UNLESS YOU HAVE TAKEN A SNAPSHOT!"  -ForegroundColor Red
+    read-host “Press ENTER to continue...”
 
-<# Sets the DSRM password according to default group policy requirements.
-This is hardcoded to avoid special character escaping issues when passed 
-as a command line parameter as well as make it entirely automated.
-#>
-$password = 'P@$$w0rd123' | ConvertTo-SecureString -AsPlainText -Force
+    <# Sets the DSRM password according to default group policy requirements.
+    This is hardcoded to avoid special character escaping issues when passed 
+    as a command line parameter as well as make it entirely automated.
+    #>
+    $password = 'P@$$w0rd123' | ConvertTo-SecureString -AsPlainText -Force
 
-# Disable the loading of the server manager tool automatically at login
-Write-Host "[*] Disabling automatic startup of Server Manager"
-Get-ScheduledTask -TaskName ServerManager | Disable-ScheduledTask -Verbose
+    # Disable the loading of the server manager tool automatically at login
+    Write-Host "[*] Disabling automatic startup of Server Manager"
+    Get-ScheduledTask -TaskName ServerManager | Disable-ScheduledTask -Verbose
 
-# Install the AD DS role along with management tools such as RSAT
-Write-Host "[*] Installing necessary roles and features"
-Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+    # Install the AD DS role along with management tools such as RSAT
+    Write-Host "[*] Installing necessary roles and features"
+    Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 
-# Create the forest and domain
-Write-Host "[*] Creating domain of $domain.local"
-Install-ADDSForest -DomainName "$domain.local" -DomainNetBiosName $domain.ToUpper() -InstallDNS -SafeModeAdministratorPassword $password -Force
+    # Create the forest and domain
+    Write-Host "[*] Creating domain of $domain.local"
+    Install-ADDSForest -DomainName "$domain.local" -DomainNetBiosName $domain.ToUpper() -InstallDNS -SafeModeAdministratorPassword $password -Force
+}
+
+
+function help(){
+    $scriptName = split-path $MyInvocation.PSCommandPath -Leaf
+    Write-Host "[*] This script will automatically promote a Server 2016/2019 machine to a DC with the domain name of <domain>.local"
+    Write-Host "[*] Usage: ./$scriptName -domain <desired domain name>"
+}
+
+
+if ($help){
+    help
+}
+elseif ([string]::IsNullOrEmpty($domain)){
+    help
+}
+else{
+    promoteDC
+}
