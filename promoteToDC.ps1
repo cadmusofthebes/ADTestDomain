@@ -11,7 +11,10 @@ $WarningPreference = 'SilentlyContinue'
 Write-Host "[!] DO NOT CONTINUE UNLESS YOU HAVE TAKEN A SNAPSHOT!"  -ForegroundColor Red
 read-host “Press ENTER to continue...”
 
-# Sets the DSRM password according to default group policy requirements. This is hardcoded to avoid special character escaping issues when passed as a command line parameter and to make it entirely automated
+<# Sets the DSRM password according to default group policy requirements.
+This is hardcoded to avoid special character escaping issues when passed 
+as a command line parameter as well as make it entirely automated.
+#>
 $password = 'P@$$w0rd123' | ConvertTo-SecureString -AsPlainText -Force
 
 # Disable the loading of the server manager tool automatically at login
