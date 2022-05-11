@@ -16,7 +16,7 @@ This will set a static IP address for the server
 ./promoteToDC.ps1 -domain matrix -disable
 
 .EXAMPLE
-./promoteToDC.ps1 -domain matrix -static
+./promoteToDC.ps1 -domain matrix -static 192.168.1.2 -gateway 192.168.1.1
 
 #> 
 
@@ -100,7 +100,7 @@ function help(){
     Write-Host "[*] Usage: ./$scriptName -domain <desired domain name> [-disable] [-static <ip> -gateway <gateway IP>]"
     Write-Host "[*] Setup Domain: ./$scriptName -domain matrix"
     Write-Host "[*] Disable Server Manager Auto-start: ./$scriptName -domain matrix -disable"
-    Write-Host "[*] Setup Static IP: ./$scriptName -domain matrix -static 192.168.1.2 -gataeway 192.168.1.1"
+    Write-Host "[*] Setup Static IP: ./$scriptName -domain matrix -static 192.168.1.2 -gateway 192.168.1.1"
 	exit
 }
 
