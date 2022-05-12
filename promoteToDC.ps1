@@ -43,22 +43,21 @@ function setStaticIP(){
     $gateway = [string]$gateway
     $cidr = "24"
     $dns = "127.0.0.1"
-    $dns2 = "1.1.1.1"
     $adapter = (Get-NetAdapter).InterfaceIndex
     $ipType = "IPv4"
     $ipRegEx="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
-    if($static -notmatch $ipRegEx){
+    if ($static -notmatch $ipRegEx){
         Write-Host "[!] ERROR: Static IP address is invalid" -ForegroundColor Red
         exit
     }
-    elseif($gateway -notmatch $ipRegEx){
+    elseif ($gateway -notmatch $ipRegEx){
         Write-Host "[!] ERROR: Gateway IP address is invalid" -ForegroundColor Red
         exit
     }
     else{
         Write-Host "[*] Setting up requested static IP"
         New-NetIPAddress -IPAddress $static -PrefixLength $cidr -InterfaceIndex $adapter -DefaultGateway $gateway -AddressFamily $ipType | Out-Null
-        Set-DNSClientServerAddress –InterfaceIndex $adapter –ServerAddresses ($dns,$dns2) | Out-Null
+        Set-DNSClientServerAddress –InterfaceIndex $adapter –ServerAddresses $dns | Out-Null
     }
 }
 
