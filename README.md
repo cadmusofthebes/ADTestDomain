@@ -2,41 +2,25 @@
 This is a series of tools that can be used to automatically setup a lab domain for testing purposes. 
 
 This is NOT a secure domain and should not be used for production environments, only for testing scenarios.
-<br>
 
------
-# promoteToDC.ps1
-This script will autmoatically promote a Windows Server 2016/2019 to a domain controller and setup a new Forest and Domain with the provided information. The final domain will be in the format of [domain].local. 
-
-It will also hardcode a DSRM password of ``P@$$w0rd123``, but you can change this in the code before you run it if desired.
-
-The basic usage of the tool is:
+You can access the help menu for any tool with with:
 ```powershell
-promoteToDC.ps1 -domain [desired domain name]
-``` 
-
-Additionally, it has a few optional parameters that can be passed which allow you to automate a few other common tasks:
-
-\- You can provide a static IP and gateway with the following. This will also set the DNS server as 127.0.0.1:
-```powershell
-promoteToDC.ps1 -domain [desired domain name] -static [ip] -gateway [ip]
+Get-Help <script>.ps1
+<script>.ps1 -help
 ```
 
-\- You can disable the auto-start of the Server Manager at login with the following:
+You can display examples on any script with
 ```powershell
-promoteToDC.ps1 -domain [desired domain name] -disable
-```
-
-\- You can access the help menu with:
-```powershell
-Get-Help promoteToDC.ps1
 Get-Help promoteToDC.ps1 -Examples
 ```
+
 <br>
 
 -----
 # renameComputer.ps1
 This script will rename a computer to a desired name. Note that you will need to launch an elevated powershell session (admin) in order to perform this function.
+
+It is recommended to run this script first on each machine so that everything in the domain has the name you want prior to setting up the domain. This change requires a reboot to take effect and none of the other below scripts can be run until the reboot is completed.
 
 The basic usage of the tool is:
 ```powershell
@@ -58,4 +42,38 @@ At line:1 char:1
 You can bypass this by running the script as follows:
 ```powershell
 PowerShell.exe -ExecutionPolicy Bypass -File .\renameComputer.ps1 -name [new computer name]
+```
+<br>
+
+-----
+# promoteToDC.ps1
+This script will automatically promote a Windows Server 2016/2019 to a domain controller and setup a new Forest and Domain with the provided information. The final domain will be in the format of [domain].local. 
+
+It will also hardcode a DSRM (Directory Services Restore Mode) password of ``P@$$w0rd123``, but you can change this in the code before you run it if desired.
+
+The basic usage of the tool is:
+```powershell
+promoteToDC.ps1 -domain [desired domain name]
+``` 
+
+Additionally, it has a few optional parameters that can be passed which allow you to automate a few other common tasks:
+
+\- You can provide a static IP and gateway with the following. This will also set the DNS server as 127.0.0.1:
+```powershell
+promoteToDC.ps1 -domain [desired domain name] -static [ip] -gateway [ip]
+```
+
+\- You can disable the auto-start of the Server Manager at login with the following:
+```powershell
+promoteToDC.ps1 -domain [desired domain name] -disable
+```
+<br>
+
+-----
+# joinToDomain.ps1
+This script will take a Windows 10 machine, set the DNS server to that of the domain controller, and join it to the domain.
+
+The basic usage of the tool is:
+```powershell
+joinToDomain.ps1 -domain [domain name] -user [domain admin] -dns [IP address of the domain controller]
 ```
