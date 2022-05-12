@@ -11,6 +11,7 @@ renameComputer.ps1 -name nebuchadnezzar
 
 [CmdletBinding()]
 Param(
+  [switch]$help,
   [string]$name
 )
 
