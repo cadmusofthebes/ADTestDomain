@@ -29,6 +29,8 @@ Param(
     [string]$domain
 )
 
+
+# Validate script is being run as an administrator
 function checkAdmin(){
     if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(`
         [Security.Principal.WindowsBuiltInRole] "Administrator")){
@@ -38,6 +40,7 @@ function checkAdmin(){
 }
 
 
+# Assign a static IP to the primary interface
 function setStaticIP(){
     $static = [string]$static
     $gateway = [string]$gateway
@@ -62,18 +65,18 @@ function setStaticIP(){
 }
 
 
+# Disable the automatic starting of the Server Manager at login
 function disableServerTools(){
-    # Disable the loading of the server manager tool automatically at login
     Write-Host "[*] Disabling automatic startup of Server Manager"
     Get-ScheduledTask -TaskName ServerManager | Disable-ScheduledTask | Out-Null
 }
 
 
+# Promote the server to a DC and setup domain
 function promoteDC(){
     # Disable all the normal warnings when creating a test domain
     $WarningPreference = 'SilentlyContinue'
 
-    # Remind user to take a snapshot before running
     Write-Host ""
     Write-Host "[*] DO NOT CONTINUE UNLESS YOU HAVE TAKEN A SNAPSHOT!"  -ForegroundColor Red
     Read-Host "Press ENTER to continue..."
@@ -84,16 +87,15 @@ function promoteDC(){
     #>
     $password = 'P@$$w0rd123' | ConvertTo-SecureString -AsPlainText -Force
 
-    # Install the AD DS role along with management tools such as RSAT
     Write-Host "[*] Installing necessary roles and features (This may take some time)"
     Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 
-    # Create the forest and domain
     Write-Host "[*] Creating domain of $domain.local"
     Install-ADDSForest -DomainName "$domain.local" -DomainNetBiosName $domain.ToUpper() -InstallDNS -SafeModeAdministratorPassword $password -Force
 }
 
 
+# Display Help
 function help(){
     $scriptName = split-path $MyInvocation.PSCommandPath -Leaf
     Write-Host "[*] Usage: ./$scriptName -domain <desired domain name> [-disable] [-static <ip> -gateway <gateway IP>]"
@@ -104,6 +106,7 @@ function help(){
 }
 
 
+# Run script
 if ($help){
     help
 }
@@ -128,6 +131,4 @@ else{
         }
     }
     promoteDC
-
 }
-
