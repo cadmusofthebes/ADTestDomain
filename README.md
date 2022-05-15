@@ -3,11 +3,13 @@ This is a series of tools that can be used to automatically setup a lab domain f
 
 This is NOT a secure domain and should not be used for production environments, only for testing scenarios.
 
+All these scripts require administrative access to run correctly due to the modification of adapter settings and installing features.
+
 The recommended order of the scripts are:
-1. renameComputer.ps1 (all machines)
+1. renameComputer.ps1 (All VMs)
 2. promoteToDC.ps1 (Windows Server)
 3. joinToDomain.ps1 (Windows 10)
-4. downloadTools.ps1 (Windows 10)
+4. downloadTools.ps1 (Attacking Windows machine)
 
 You can access the help menu for any tool with with:
 ```powershell
@@ -15,25 +17,15 @@ Get-Help <script>.ps1
 <script>.ps1 -help
 ```
 
-You can display examples on any script with
+You can display examples on any script with:
 ```powershell
 Get-Help promoteToDC.ps1 -Examples
 ```
-
 <br>
 
 -----
-# renameComputer.ps1
-This script will rename a computer to a desired name. Note that you will need to launch an elevated powershell session (admin) in order to perform this function.
-
-It is recommended to run this script first on each machine so that everything in the domain has the name you want prior to setting up the domain. This change requires a reboot to take effect and none of the other below scripts can be run until the reboot is completed.
-
-The basic usage of the tool is:
-```powershell
-renameComputer.ps1 -name [new computer name]
-```
-
-On most Windows 10 machines, the execution policy is enabled which prevents the running of scripts. Attempting to run this will result in the following error:
+# Windows 10 and Execution Policy
+On most Windows 10 machines, the execution policy is enabled which prevents the running of scripts (or Get-Help on those scripts). Attempting to run this will result in the following error:
 ```
 .\renameComputer.ps1 : File C:\Users\Admin\Documents\renameComputer.ps1 cannot be loaded because running scripts is
 disabled on this system. For more information, see about_Execution_Policies at
@@ -45,9 +37,27 @@ At line:1 char:1
     + FullyQualifiedErrorId : UnauthorizedAccess
 ```
 
-You can bypass this by running the script as follows:
+You can do one of two things in an elevated console:
+1. Bypass this on one script:
 ```powershell
 PowerShell.exe -ExecutionPolicy Bypass -File .\renameComputer.ps1 -name [new computer name]
+```
+
+2. Modify the execution policy:
+```powershell
+Set-ExecutionPolicy Unrestricted
+```
+<br>
+
+-----
+# renameComputer.ps1
+This script will rename a computer to a desired name. 
+
+It is recommended to run this script first on each machine so that everything in the domain has the name you want prior to setting up the domain. This change requires a reboot to take effect and none of the other below scripts can be run until the reboot is completed.
+
+The basic usage of the tool is:
+```powershell
+renameComputer.ps1 -name [new computer name]
 ```
 <br>
 
@@ -62,9 +72,13 @@ The basic usage of the tool is:
 promoteToDC.ps1 -domain [desired domain name]
 ``` 
 
-Additionally, it has a few optional parameters that can be passed which allow you to automate a few other common tasks:
+Additionally, it has a few optional parameters that can be passed which allow you to automate a few other common tasks.
 
-\- You can provide a static IP and gateway with the following. This will also set the DNS server as 127.0.0.1:
+\- You can provide a static IP and gateway with the ``-static`` and ``-gateway`` parameters. When given, the script will take the following actions:
+- Display a list of interfaces connected to your VM and allow you to choose which one you wish to apply it to
+- Remove the old IP address and gateway
+- Set the given IP address and gateway
+- Set the DNS server as 127.0.0.1
 ```powershell
 promoteToDC.ps1 -domain [desired domain name] -static [ip] -gateway [ip]
 ```
@@ -77,11 +91,13 @@ promoteToDC.ps1 -domain [desired domain name] -disable
 
 -----
 # joinToDomain.ps1
-This script will take a Windows 10 machine, set the DNS server to that of the domain controller, and join it to the domain.
+This script will take a Windows 10 machine and perform the following actions:
+- Set the DNS server to that of the domain controller
+- Join it to the domain
 
 The basic usage of the tool is:
 ```powershell
-joinToDomain.ps1 -domain [domain name] -user [domain admin] -dns [IP address of the domain controller]
+joinToDomain.ps1 -domain [domain name] -user [domain admin] -dc [IP address of the domain controller]
 ```
 <br>
 
@@ -107,9 +123,7 @@ The basic usage of this tool is:
 downloadTools.ps1
 ```
 
-A few of these tools will trigger Windows Defender and be deleted at download. To prevent this, you can use the optional ``-exclude`` parameter which will add an exclusion path for the current directory:
+A few of these tools will trigger Windows Defender and be deleted at download. To prevent this, you can use the optional ``-exclude`` parameter which will add an exclusion path for the current directory. Doing so will require an elevated powershell session:
 ```powershell
 downloadTools.ps1 -exclude
 ```
-
-Note that you will need to launch an elevated (admin) powershell session to run this.
