@@ -3,6 +3,12 @@ This is a series of tools that can be used to automatically setup a lab domain f
 
 This is NOT a secure domain and should not be used for production environments, only for testing scenarios.
 
+The recommended order of the scripts are:
+1. renameComputer.ps1 (all machines)
+2. promoteToDC.ps1 (Windows Server)
+3. joinToDomain.ps1 (Windows 10)
+4. downloadTools.ps1 (Windows 10)
+
 You can access the help menu for any tool with with:
 ```powershell
 Get-Help <script>.ps1
@@ -49,7 +55,7 @@ PowerShell.exe -ExecutionPolicy Bypass -File .\renameComputer.ps1 -name [new com
 # promoteToDC.ps1
 This script will automatically promote a Windows Server 2016/2019 to a domain controller and setup a new Forest and Domain with the provided information. The final domain will be in the format of [domain].local. 
 
-It will also hardcode a DSRM (Directory Services Restore Mode) password of ``P@$$w0rd123``, but you can change this in the code before you run it if desired.
+It also has a hardcoded DSRM (Directory Services Restore Mode) password of ``P@$$w0rd123``, but you can change this in the code before you run it if desired.
 
 The basic usage of the tool is:
 ```powershell
@@ -77,3 +83,28 @@ The basic usage of the tool is:
 ```powershell
 joinToDomain.ps1 -domain [domain name] -user [domain admin] -dns [IP address of the domain controller]
 ```
+<br>
+
+-----
+# downloadTools.ps1
+This script will download a number of commonly used tools for Active Directory enumeration and exploitation.
+
+The current list of tools are:
+- Bloodhound Tools
+    - Bloodhound
+    - Sharphound Injestor
+    - Bloodhound Python Injestor
+    - Neo4j
+- CrackMapExec (CME)
+- Powershell Remote System Administration Tools (RSAT)
+- PowerSploit
+- SharpView
+- Notepad++
+- Python3
+
+A few of these tools will trigger Windows Defender and be deleted at download. To prevent this, you can use the optional ``-exclude`` parameter which will add an exclusion path where the files are being download:
+```powershell
+downloadTools.ps1 -defender
+```
+
+Note that you will need to launch an elevated (admin) powershell session to run this.
