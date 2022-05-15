@@ -109,7 +109,7 @@ downloadTools.ps1
 
 A few of these tools will trigger Windows Defender and be deleted at download. To prevent this, you can use the optional ``-exclude`` parameter which will add an exclusion path for the current directory:
 ```powershell
-downloadTools.ps1 -defender
+downloadTools.ps1 -exclude
 ```
 
 Note that you will need to launch an elevated (admin) powershell session to run this.
