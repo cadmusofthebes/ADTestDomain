@@ -92,8 +92,8 @@ This script will download a number of commonly used tools for Active Directory e
 The current list of tools are:
 - Bloodhound Tools
     - Bloodhound
-    - Sharphound Injestor
-    - Bloodhound Python Injestor
+    - Sharphound Ingestor
+    - Bloodhound Python Ingestor
     - Neo4j
 - CrackMapExec (CME)
 - Powershell Remote System Administration Tools (RSAT)
@@ -102,7 +102,12 @@ The current list of tools are:
 - Notepad++
 - Python3
 
-A few of these tools will trigger Windows Defender and be deleted at download. To prevent this, you can use the optional ``-exclude`` parameter which will add an exclusion path where the files are being download:
+The basic usage of this tool is:
+```powershell
+downloadTools.ps1
+```
+
+A few of these tools will trigger Windows Defender and be deleted at download. To prevent this, you can use the optional ``-exclude`` parameter which will add an exclusion path for the current directory:
 ```powershell
 downloadTools.ps1 -defender
 ```
