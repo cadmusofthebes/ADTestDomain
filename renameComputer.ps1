@@ -28,6 +28,11 @@ function checkAdmin(){
 
 # Rename the computer
 function renameComputer(){
+    Write-Host ""
+    Write-Host "[*] DO NOT CONTINUE UNLESS YOU HAVE TAKEN A SNAPSHOT!"  -ForegroundColor Red
+    Write-Host "[*] The computer will automatically reboot when this is completed"
+    Read-Host "Press ENTER to continue..."
+    
     Write-Host "[*] Renaming computer to $name"
     Rename-computer -NewName $name
 }
