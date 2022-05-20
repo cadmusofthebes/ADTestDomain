@@ -127,3 +127,11 @@ A few of these tools will trigger Windows Defender and be deleted at download. T
 ```powershell
 downloadTools.ps1 -exclude
 ```
+<br>
+
+------
+# TODO
+I have a couple of enhancements in mind for future releases:
+
+- Add the ability to provide an alternative DNS server for both promoteToDC and joinToDomain
+- Combine all tools into a single tool that is menu driven
