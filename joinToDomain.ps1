@@ -70,11 +70,7 @@ function setDNS(){
 
 
 # Join the computer to the domain
-function joinDomain(){
-    Write-Host "[*] DO NOT CONTINUE UNLESS TAKEN A SNAPSHOT!"  -ForegroundColor Red
-    Write-Host "[*] The computer will automatically reboot when this is completed"
-    Read-Host "Press ENTER to continue..."
-    
+function joinDomain(){  
     $password = Read-Host -Prompt "Enter password for $user" -AsSecureString
     $credential = New-Object System.Management.Automation.PSCredential($user,$password)
     try{
@@ -106,6 +102,11 @@ elseif ([string]::IsNullOrEmpty($domain) -or [string]::IsNullOrEmpty($user) -or 
 }
 else{
     checkAdmin
+    
+    Write-Host "[*] DO NOT CONTINUE UNLESS TAKEN A SNAPSHOT!"  -ForegroundColor Red
+    Write-Host "[*] The computer will automatically reboot when this is completed"
+    Read-Host "Press ENTER to continue..."
+
     setDNS
     joinDomain
 }
