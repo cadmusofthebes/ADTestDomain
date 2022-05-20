@@ -34,7 +34,17 @@ function checkAdmin(){
     if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(`
         [Security.Principal.WindowsBuiltInRole] "Administrator")){
         Write-Host "[!] ERROR: You are not running this script as an administrator" -ForegroundColor Red
-        Break
+        exit
+    }
+}
+
+
+# Validate machine is a Windows Server machine
+function checkServerType(){
+    $os = (Get-WMIObject win32_operatingsystem).name
+    if (-not ($os -like "*Server*")){
+        Write-Host "[!] ERROR: This is not a Windows Server operating system" -ForegroundColor Red
+        exit
     }
 }
 
@@ -100,11 +110,6 @@ function promoteDC(){
     # Disable all the normal warnings when creating a test domain
     $WarningPreference = 'SilentlyContinue'
 
-    Write-Host ""
-    Write-Host "[*] DO NOT CONTINUE UNLESS YOU HAVE TAKEN A SNAPSHOT!"  -ForegroundColor Red
-    Write-Host "[*] The computer will automatically reboot when this is completed"
-    Read-Host "Press ENTER to continue..."
-
     <# Sets the DSRM password according to default group policy requirements.
     This is hardcoded to avoid special character escaping issues when passed 
     as a command line parameter as well as to make it entirely automated.
@@ -140,7 +145,14 @@ elseif ([string]::IsNullOrEmpty($domain)){
     help
 }
 else{
+    checkServerType
     checkAdmin
+    
+    Write-Host ""
+    Write-Host "[*] DO NOT CONTINUE UNLESS YOU HAVE TAKEN A SNAPSHOT!"  -ForegroundColor Red
+    Write-Host "[*] The computer will automatically reboot when this is completed"
+    Read-Host "Press ENTER to continue..."
+
     if ($static){
         # TODO: Better error handling for when -static is passed but there is no value
         if ([string]::IsNullOrEmpty($gateway)){
