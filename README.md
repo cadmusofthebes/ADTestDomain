@@ -134,4 +134,5 @@ downloadTools.ps1 -exclude
 I have a couple of enhancements in mind for future releases:
 
 - Add the ability to provide an alternative DNS server for both promoteToDC and joinToDomain
+- Add the ability to provide an FQDN instead of automatically doing [domain].local
 - Combine all tools into a single tool that is menu driven
