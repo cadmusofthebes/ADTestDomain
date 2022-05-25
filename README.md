@@ -87,6 +87,11 @@ promoteToDC.ps1 -domain [desired domain name] -static [ip] -gateway [ip]
 ```powershell
 promoteToDC.ps1 -domain [desired domain name] -disable
 ```
+
+\- You can add a forward DNS server to the local DNS server with the following:
+```powershell
+promoteToDC.ps1 -domain [desired domain name] -dns [dns server IP]
+```
 <br>
 
 -----
