@@ -1,6 +1,6 @@
 <#
 .Description
-This script will automatically promote a Server 2016 or Server 2019 machine to a domain controller and create a domain
+This script will automatically promote a Windows Server machine to a domain controller and create a domain
 
 .PARAMETER domain
 The domain parameter will be the name of your domain (Required)
@@ -8,6 +8,8 @@ The domain parameter will be the name of your domain (Required)
 This will disable the automatic start of the server tools when signing in as an admin (Optional)
 .PARAMETER static
 This will set a static IP address for the server (Optional)
+.PARAMETER dns
+This will set a DNS forwarder for the DNS server (Optional)
 
 .EXAMPLE
 ./promoteToDC.ps1 -domain matrix
@@ -17,6 +19,9 @@ This will set a static IP address for the server (Optional)
 
 .EXAMPLE
 ./promoteToDC.ps1 -domain matrix -static 192.168.1.2 -gateway 192.168.1.1
+
+.EXAMPLE
+./promoteToDC.ps1 -domain matrix -dns 1.1.1.1
 #> 
 
 [CmdletBinding()]
@@ -25,7 +30,8 @@ Param(
     [switch]$disable,
     [string]$static,
     [string]$gateway,
-    [string]$domain
+    [string]$domain,
+    [string]$dns
 )
 
 
@@ -44,6 +50,16 @@ function checkServerType(){
     $os = (Get-WMIObject win32_operatingsystem).name
     if (-not ($os -like "*Server*")){
         Write-Host "[!] ERROR: This is not a Windows Server operating system" -ForegroundColor Red
+        exit
+    }
+}
+
+
+# Validate that provided IPs are in the correct format
+function validateIPFormat($ip){
+    $ipRegEx="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+    if ($ip -notmatch $ipRegEx){
+        Write-Host "[!] ERROR: A provided IP address is in an invalid format" -ForegroundColor Red
         exit
     }
 }
@@ -76,25 +92,13 @@ function setStaticIP(){
     $cidr = "24"
     $dns = "127.0.0.1"
     $ipType = "IPv4"
-    $ipRegEx="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
-
-    # Validate format of given IP address and gateway
-    if ($static -notmatch $ipRegEx){
-        Write-Host "[!] ERROR: Static IP address is invalid" -ForegroundColor Red
-        exit
-    }
-    elseif ($gateway -notmatch $ipRegEx){
-        Write-Host "[!] ERROR: Gateway IP address is invalid" -ForegroundColor Red
-        exit
-    }
+    
     # Remove all information and assign given IP address and gateway
-    else{
-        Write-Host "[*] Setting the IP address to $static and gateway to $gateway"
-        Remove-NetIPAddress -InterfaceIndex $adapter -Confirm:$false
-        Remove-NetRoute -InterfaceIndex $adapter -Confirm:$false
-        New-NetIPAddress -IPAddress $static -PrefixLength $cidr -InterfaceIndex $adapter -DefaultGateway $gateway -AddressFamily $ipType -ErrorAction Stop | Out-Null
-        Set-DNSClientServerAddress –InterfaceIndex $adapter –ServerAddresses $dns -ErrorAction Stop | Out-Null
-    }
+    Write-Host "[*] Setting the IP address to $static and gateway to $gateway"
+    Remove-NetIPAddress -InterfaceIndex $adapter -Confirm:$false
+    Remove-NetRoute -InterfaceIndex $adapter -Confirm:$false
+    New-NetIPAddress -IPAddress $static -PrefixLength $cidr -InterfaceIndex $adapter -DefaultGateway $gateway -AddressFamily $ipType -ErrorAction Stop | Out-Null
+    Set-DNSClientServerAddress –InterfaceIndex $adapter –ServerAddresses $dns -ErrorAction Stop | Out-Null
 }
 
 
@@ -119,8 +123,13 @@ function promoteDC(){
     # Add necessary roles and create domain
     Write-Host "[*] Installing necessary roles and features (This may take some time)"
     Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools | Out-Null
-    Write-Host "[*] Creating domain of $domain.local"
+    Write-Host "[*] Creating domain of $domain.local and installing DNS"
     Install-ADDSForest -DomainName "$domain.local" -DomainNetBiosName $domain.ToUpper() -InstallDNS -SafeModeAdministratorPassword $password -Force | Out-Null
+    if ($dns){
+        validateIPFormat($dns)
+        Write-Host "[*] Setting up a DNS forwarder of $dns" | Out-Null
+        Add-DNSServerForwarder -IPAddress $dns -PassThru
+    }
 }
 
 
@@ -131,6 +140,7 @@ function help(){
     Write-Host "[*] Setup Domain: ./$scriptName -domain matrix"
     Write-Host "[*] Disable Server Manager Auto-start: ./$scriptName -domain matrix -disable"
     Write-Host "[*] Setup Static IP: ./$scriptName -domain matrix -static 192.168.1.2 -gateway 192.168.1.1"
+    Write-Host "[*] Setup Static IP: ./$scriptName -domain matrix -dns 1.1.1.1"
     exit
 }
 
@@ -160,7 +170,19 @@ else{
             help
         }
         else{
+            validateIPFormat($static)
+            validateIPFormat($gateway)
             setStaticIP($static, $gateway)
+        }
+    }
+    if ($dns){
+        # TODO: Better error handling for when -static is passed but there is no value
+        if ([string]::IsNullOrEmpty($dns)){
+            Write-Host "[!] ERROR: '-dns' entered but no DNS server given" -ForegroundColor Red
+            help
+        }
+        else{
+            validateIPFormat($dns)
         }
     }
     if ($disable){
