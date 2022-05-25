@@ -32,6 +32,16 @@ function checkAdmin(){
 }
 
 
+# Validate that provided IPs are in the correct format
+function validateIPFormat($ip){
+    $ipRegEx="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+    if ($ip -notmatch $ipRegEx){
+        Write-Host "[!] ERROR: A provided IP address is in an invalid format" -ForegroundColor Red
+        exit
+    }
+}
+
+
 # Display list of interfaces and set the DNS Server to that of the Domain Controller
 function setDNS(){
     $dns = [string]$dns
@@ -55,17 +65,9 @@ function setDNS(){
     # Assign requested interface
     $adapter = $menu.Item($selection)
 
-    # Validate format of given DNS server
-    $ipRegEx="\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
-    if ($dc -notmatch $ipRegEx){
-        Write-Host "[!] ERROR: Domain Controller IP address is in an invalid format" -ForegroundColor Red
-        exit
-    }
     # Assign given DNS address to selected interface
-    else{
-        Write-Host "[*] Setting the DNS server to $dc"
-        Set-DNSClientServerAddress –InterfaceIndex $adapter –ServerAddresses $dc | Out-Null
-    }
+    Write-Host "[*] Setting the DNS server to $dc"
+    Set-DNSClientServerAddress –InterfaceIndex $adapter –ServerAddresses $dc | Out-Null
 }
 
 
@@ -106,7 +108,8 @@ else{
     Write-Host "[*] DO NOT CONTINUE UNLESS TAKEN A SNAPSHOT!"  -ForegroundColor Red
     Write-Host "[*] The computer will automatically reboot when this is completed"
     Read-Host "Press ENTER to continue..."
-
+    
+    validateIPFormat($dc)
     setDNS
     joinDomain
 }
