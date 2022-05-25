@@ -133,6 +133,9 @@ downloadTools.ps1 -exclude
 # TODO
 I have a couple of enhancements in mind for future releases:
 
-- Add the ability to provide an alternative DNS server for both promoteToDC and joinToDomain
+- Add the ability to provide a user-specified a DNS forwarder for the Domain Controller. Right now you have to add it manually:
+```powershell
+Add-DnsServerForwarder -IPAddress 1.1.1.1 -PassThru
+```
 - Add the ability to provide an FQDN instead of automatically doing [domain].local
 - Combine all tools into a single tool that is menu driven
